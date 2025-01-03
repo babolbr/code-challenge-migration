@@ -1,30 +1,52 @@
 package com.example.dummyjson.service;
 
 import com.example.dummyjson.dto.Product;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.dummyjson.dto.ProductResponse;
+import reactor.core.publisher.Mono;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 @Service
 public class ProductService {
 
-    private final String BASE_URL = "https://dummyjson.com/products";
+    private WebClient webClient;
+   
+    @Value("${endpoint.url}")
+    private String urlParametrizada;
+    
 
-    @Autowired
-    private RestTemplate restTemplate;
-
-    public List<Product> getAllProducts() {
-        Product[] products = restTemplate.getForObject(BASE_URL, Product[].class);
-        return Arrays.asList(products);
+    public ProductService() {
+        this.webClient = WebClient.create("https://dummyjson.com");
     }
+    
+    public ProductService(WebClient webClient) {
+        this.webClient = webClient;
+    }
+    
+   
+    public List<Product> getAllProducts() {
+    	this.webClient =  WebClient.create(urlParametrizada);
+    	Mono<ProductResponse> response = webClient.get().uri("/products")
+    			  .accept(MediaType.APPLICATION_JSON)
+    			  .retrieve()
+    			  .bodyToMono(ProductResponse.class).log();
+    	
+    	//Adaptacao realizada pois o json retorna uma lista de products, 
+    	//e a conversao para Product[] estava apresentando problema
+    	ProductResponse product = response.block();
 
+    	return product.getProducts();
+    }
+    
     public Product getProductById(Long id) {
-        String url = BASE_URL + "/" + id;
-        return restTemplate.getForObject(url, Product.class);
+    	this.webClient =  WebClient.create(urlParametrizada);
+   	 return this.webClient.get()
+	            .uri("/products/"+id)
+	            .retrieve()
+	            .bodyToMono(Product.class).block();
     }
 }

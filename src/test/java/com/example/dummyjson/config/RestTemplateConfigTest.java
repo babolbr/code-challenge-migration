@@ -1,19 +1,20 @@
 package com.example.dummyjson.config;
 
 import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 
-@RunWith(MockitoJUnitRunner.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 public class RestTemplateConfigTest {
 
-    @InjectMocks
-    RestTemplateConfig restTemplateConfig;
+	@Autowired
+	WebClientConfig webClientConfig;
 
     @Test
     public void testRestTemplateConfig(){
-        Assert.assertNotNull(this.restTemplateConfig.restTemplate());
+        Assert.assertNotNull(this.webClientConfig.webClient());
     }
 }
